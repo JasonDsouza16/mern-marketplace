@@ -63,11 +63,23 @@ exports.createOrUpdateOrder = async (req, res) => {
       await cartOrder.save();
     }
 
+    // Fetch the order ID
+    const orderId = cartOrder._id;
+
+    // Check if the order ID already exists in the user's orders
+    const existingOrder = user.orders.find(order => order.toString() === orderId.toString());
+
+    // If the order ID doesn't exist, add it to the user's orders array
+    if (!existingOrder) {
+      user.orders.push(orderId);
+      await user.save();
+    }
+
     // Return success response
-    res.status(200).json({ message: 'Item added to cart successfully' });
+    res.status(200).json({ message: 'Order updated successfully' });
   } catch (error) {
     // Handle errors
-    console.error('Error adding item to cart:', error);
+    console.error('Error creating or updating order:', error);
     res.status(500).json({ message: 'Internal server error' });
   }
 };

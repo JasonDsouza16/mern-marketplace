@@ -1,13 +1,28 @@
 const Item = require('../models/Item');
 const User = require('../models/User');
 
+//required
 exports.createItem = async (req, res) => {
+  const { name, description, category, price, image, sellerEmail } = req.body;
   try {
-    const newItem = new Item(req.body);
+    const user = await User.findOne({ email: sellerEmail });
+    if (!user) {
+      return res.status(404).json({ message: 'Seller not found' });
+    }
+    const newItem = new Item({
+      name,
+      description,
+      category,
+      price,
+      image,
+      seller: user._id,
+      status: 'pending'
+    });
     await newItem.save();
     res.status(201).json(newItem);
   } catch (error) {
-    res.status(400).json({ message: error.message });
+    console.error('Error adding new item:', error);
+    res.status(500).json({ message: 'Internal server error' });
   }
 };
 
@@ -21,6 +36,22 @@ exports.getAllItems = async (req, res) => {
   }
 };
 
+//required
+exports.suspendItem = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const item = await Item.findByIdAndUpdate(id, { status: 'suspended' }, { new: true });
+
+    if (!item) {
+      return res.status(404).json({ message: 'Item not found' });
+    }
+
+    res.status(200).json(item);
+  } catch (error) {
+    console.error('Error suspending item:', error);
+    res.status(500).json({ message: 'Internal server error' });
+  }
+};
 
 //required
 exports.getAllItemsByUserEmail = async (req, res) => {
@@ -33,6 +64,7 @@ exports.getAllItemsByUserEmail = async (req, res) => {
     const items = await Item.find({ seller: user._id });
     res.status(200).json(items);
   } catch (err) {
+    console.log(error)
     res.status(500).json({ message: err.message });
   }
 };

@@ -8,7 +8,7 @@ const itemSchema = new mongoose.Schema({
   quantity: { type: Number, default: 1 },
   image: { type: String },
   seller: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
-  status: { type: String, enum: ['pending', 'approved', 'disapproved'], default: 'pending' }, 
+  status: { type: String, enum: ['pending', 'approved', 'disapproved', 'suspended'], default: 'pending' }, 
 });
 
 module.exports = mongoose.model('Item', itemSchema);

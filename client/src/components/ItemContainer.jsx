@@ -27,7 +27,7 @@ export const ItemContainer = () => {
         'http://localhost:4000/api/orders',
         { productId: productId,
           userEmail: userEmail,
-          quantity: 30
+          quantity: 1
         },
         {
           headers: {
