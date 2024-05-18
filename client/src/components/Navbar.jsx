@@ -14,11 +14,11 @@ import Button from "@mui/material/Button";
 import Tooltip from "@mui/material/Tooltip";
 import MenuItem from "@mui/material/MenuItem";
 import StoreIcon from "@mui/icons-material/Store";
-import ShoppingCartIcon from "@mui/icons-material/ShoppingCart"; // Import ShoppingCartIcon
-import { deepOrange } from "@mui/material/colors";
+import ShoppingCartIcon from "@mui/icons-material/ShoppingCart";
 
 export const Navbar = () => {
-  const { user, isAuthenticated, loginWithRedirect, logout } = useAuth0();
+  const { user, isAuthenticated, loginWithRedirect, logout, isLoading } =
+    useAuth0();
   const navigate = useNavigate();
 
   const pages = isAuthenticated
@@ -155,16 +155,16 @@ export const Navbar = () => {
                 </Tooltip>
                 <Tooltip title="Open settings">
                   <IconButton onClick={handleOpenUserMenu} sx={{ p: 0 }}>
-                    <Avatar sx={{ bgcolor: deepOrange[500] }}>
-                      {user.name.charAt(0)}
-                    </Avatar>
+                    <Avatar src={user.picture} />
                   </IconButton>
                 </Tooltip>
               </>
             ) : (
-              <Button color="inherit" onClick={() => loginWithRedirect()}>
-                Login
-              </Button>
+              !isLoading && ( // Check if isLoading is false
+                <Button color="inherit" onClick={() => loginWithRedirect()}>
+                  Login
+                </Button>
+              )
             )}
             <Menu
               sx={{ mt: "45px" }}

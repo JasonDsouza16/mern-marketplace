@@ -5,6 +5,8 @@ import { Logout } from './components/Logout';
 import {Navbar} from './components/Navbar';
 import {HomePage} from './pages/HomePage';
 import { MyItems } from './pages/MyItems';
+import { Profile } from './pages/Profile';
+
 
 
 const App = () => {
@@ -17,6 +19,7 @@ const App = () => {
           <Route exact path="/my-products" element={<MyItems/>} />
           <Route exact path="/login" element={<Login/>} />
           <Route exact path="/logout" element={<Logout/>} />
+          <Route exact path="/profile" element={<Profile/>} />
         </Routes>
     </Router>
     </div>
