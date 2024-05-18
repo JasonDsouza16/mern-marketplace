@@ -25,7 +25,6 @@ export const HomePage = () => {
   }, [isAuthenticated, user]);
   return (
     <div className="container">
-      <h1 className="mt-4">Marketplace</h1>
       <ItemContainer/>
     </div>
   );

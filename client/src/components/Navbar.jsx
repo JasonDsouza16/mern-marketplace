@@ -1,4 +1,6 @@
 import * as React from "react";
+import { useNavigate } from "react-router-dom";
+import { useAuth0 } from "@auth0/auth0-react";
 import AppBar from "@mui/material/AppBar";
 import Box from "@mui/material/Box";
 import Toolbar from "@mui/material/Toolbar";
@@ -12,20 +14,20 @@ import Button from "@mui/material/Button";
 import Tooltip from "@mui/material/Tooltip";
 import MenuItem from "@mui/material/MenuItem";
 import StoreIcon from "@mui/icons-material/Store";
-import { useNavigate } from "react-router-dom";
-import { useAuth0 } from "@auth0/auth0-react";
+import ShoppingCartIcon from "@mui/icons-material/ShoppingCart"; // Import ShoppingCartIcon
 import { deepOrange } from "@mui/material/colors";
 
 export const Navbar = () => {
-  const [anchorElNav, setAnchorElNav] = React.useState(null);
-  const [anchorElUser, setAnchorElUser] = React.useState(null);
-
+  const { user, isAuthenticated, loginWithRedirect, logout } = useAuth0();
   const navigate = useNavigate();
 
-  const { loginWithRedirect, logout, user, isAuthenticated } = useAuth0();
-
-  const pages = isAuthenticated ? ["Home", "My Products", "My Orders"] : ["Home"];
+  const pages = isAuthenticated
+    ? ["Home", "My Products", "My Orders"]
+    : ["Home"];
   const settings = isAuthenticated ? ["Profile", "Logout"] : ["Login"];
+
+  const [anchorElNav, setAnchorElNav] = React.useState(null);
+  const [anchorElUser, setAnchorElUser] = React.useState(null);
 
   const handleOpenNavMenu = (event) => {
     setAnchorElNav(event.currentTarget);
@@ -36,28 +38,15 @@ export const Navbar = () => {
 
   const handleCloseNavMenu = (page) => {
     setAnchorElNav(null);
-    if (page) {
-      // Convert page text to lowercase and replace spaces with hyphens for URL
-      const path = page.toLowerCase().replace(/ /g, "-");
-      navigate(`/${path}`);
-    }
+    if (page === "Home") navigate("/");
+    if (page === "My Products") navigate("/my-products");
+    if (page === "My Orders") navigate("/my-orders");
   };
 
   const handleCloseUserMenu = (setting) => {
     setAnchorElUser(null);
-    if (setting) {
-      const path = setting.toLowerCase().replace(/ /g, "-");
-      navigate(`/${path}`);
-    }
-  };
-
-  const getUserInitials = () => {
-    if (!user || !user.name) {
-      return "GU";
-    }
-    const names = user.name.split(" ");
-    const initials = names.map((name) => name[0]).join("");
-    return initials.toUpperCase();
+    if (setting === "Logout") logout({ returnTo: window.location.origin });
+    if (setting === "Profile") navigate("/profile");
   };
 
   return (
@@ -80,7 +69,7 @@ export const Navbar = () => {
               textDecoration: "none",
             }}
           >
-            MERN-Marketplace
+            MERN.Marketplace
           </Typography>
 
           <Box sx={{ flexGrow: 1, display: { xs: "flex", md: "none" } }}>
@@ -107,7 +96,7 @@ export const Navbar = () => {
                 horizontal: "left",
               }}
               open={Boolean(anchorElNav)}
-              onClose={() => handleCloseNavMenu()}
+              onClose={() => setAnchorElNav(null)}
               sx={{
                 display: { xs: "block", md: "none" },
               }}
@@ -151,13 +140,32 @@ export const Navbar = () => {
           </Box>
 
           <Box sx={{ flexGrow: 0 }}>
-            <Tooltip title="Open settings">
-              <IconButton onClick={handleOpenUserMenu} sx={{ p: 0 }}>
-                <Avatar sx={{ bgcolor: deepOrange[500] }}>
-                  {getUserInitials()}
-                </Avatar>
-              </IconButton>
-            </Tooltip>
+            {isAuthenticated ? (
+              <>
+                <Tooltip title="Shopping Cart">
+                  <IconButton
+                    size="large"
+                    edge="start"
+                    color="inherit"
+                    aria-label="shopping cart"
+                    sx={{ mr: 2 }} // Add margin to the right
+                  >
+                    <ShoppingCartIcon onClick={() => navigate("my-cart")} />
+                  </IconButton>
+                </Tooltip>
+                <Tooltip title="Open settings">
+                  <IconButton onClick={handleOpenUserMenu} sx={{ p: 0 }}>
+                    <Avatar sx={{ bgcolor: deepOrange[500] }}>
+                      {user.name.charAt(0)}
+                    </Avatar>
+                  </IconButton>
+                </Tooltip>
+              </>
+            ) : (
+              <Button color="inherit" onClick={() => loginWithRedirect()}>
+                Login
+              </Button>
+            )}
             <Menu
               sx={{ mt: "45px" }}
               id="menu-appbar"
@@ -172,7 +180,7 @@ export const Navbar = () => {
                 horizontal: "right",
               }}
               open={Boolean(anchorElUser)}
-              onClose={() => handleCloseUserMenu()}
+              onClose={handleCloseUserMenu}
             >
               {settings.map((setting) => (
                 <MenuItem
