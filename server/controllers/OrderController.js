@@ -1,7 +1,7 @@
 const Order = require('../models/Order');
 const User = require('../models/User');
 const OrderItem = require('../models/orderItem');
-
+const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
 
 exports.createOrder = async (req, res) => {
   try {
@@ -82,7 +82,6 @@ const calculateOrderGrandTotal = (items) => {
   for (const item of items) {
     // Check if the item and its price are defined
     if (item.item && item.item.price) {
-      console.log(item.quantity , item.item.price)
       total += item.quantity * item.item.price;
     }
   }
@@ -91,7 +90,65 @@ const calculateOrderGrandTotal = (items) => {
 };
 
 
+exports.createPaymentIntent = async (req, res) => {
+  const { userEmail } = req.body;
+  console.log("email ",userEmail)
+  try {
+    const user = await User.findOne({email: userEmail}) 
+    const userOrder = await Order.findOne({ user: user._id, status: 'in cart' }).populate('items.item');
 
+    if (!userOrder) {
+      return res.status(404).json({ error: 'Order not found' });
+    }
+
+    const lineItems = userOrder.items.map(orderItem => ({
+      price_data: {
+        currency: 'inr',
+        product_data: {
+          name: orderItem.item.name,
+        },
+        unit_amount: orderItem.item.price * 100, 
+      },
+      quantity: orderItem.quantity,
+    }));
+
+    const session = await stripe.checkout.sessions.create({
+ payment_method_types: ['card'],
+      line_items: lineItems,
+      mode: 'payment',
+      success_url: `${process.env.CLIENT_URL}/success?session_id={CHECKOUT_SESSION_ID}`,
+      cancel_url: `${process.env.CLIENT_URL}/cancel`,
+      metadata: {
+        orderId: userOrder._id.toString(),
+      },
+    });
+
+    res.status(200).json({ id: session.id });
+  } catch (error) {
+    console.error('Error creating checkout session:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+};
+
+exports.handleWebhook = (req, res) => {
+  const sig = req.headers['stripe-signature'];
+  let event;
+
+  try {
+    event = stripe.webhooks.constructEvent(req.body, sig, process.env.STRIPE_WEBHOOK_SECRET);
+  } catch (err) {
+    return res.status(400).send(`Webhook Error: ${err.message}`);
+  }
+
+  if (event.type === 'payment_intent.succeeded') {
+    const paymentIntent = event.data.object;
+
+    // Handle successful payment here (update order status, etc.)
+    console.log('PaymentIntent was successful!');
+  }
+
+  res.json({ received: true });
+};
 
 
 

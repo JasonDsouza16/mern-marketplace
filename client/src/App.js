@@ -19,7 +19,7 @@ const App = () => {
           <Route exact path="/login" element={<Login/>} />
           <Route exact path="/logout" element={<Logout/>} />
           <Route exact path="/profile" element={<Profile/>} />
-          <Route exact path="/my-cart" element={<Cart/>} />         
+          <Route exact path="/my-cart" element={<Cart/>} />       
         </Routes>
     </Router>
     </div>

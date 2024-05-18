@@ -14,26 +14,29 @@ import AddIcon from "@mui/icons-material/Add";
 import RemoveIcon from "@mui/icons-material/Remove";
 import { useAuth0 } from "@auth0/auth0-react";
 import Loader from "../components/Loader";
+import { useNavigate } from "react-router-dom";
+import { CheckoutButton } from "./CheckoutButton";
 
 export const Cart = () => {
   const [order, setOrder] = useState(null);
   const { user, isLoading, getAccessTokenSilently } = useAuth0();
+  const navigate = useNavigate();
+
+  const fetchOrder = async () => {
+    try {
+      const response = await axios.get(
+        `http://localhost:4000/api/users/userCart/${user.email}`
+      );
+      setOrder(response.data);
+      console.warn(response.data);
+    } catch (error) {
+      console.error("Error fetching order:", error);
+    }
+  };
 
   useEffect(() => {
-    const fetchOrder = async () => {
-      try {
-        const response = await axios.get(
-          `http://localhost:4000/api/users/userCart/${user.email}`
-        );
-        setOrder(response.data);
-        console.warn(response.data);
-      } catch (error) {
-        console.error("Error fetching order:", error);
-      }
-    };
-
     fetchOrder();
-  }, [isLoading,order]);
+  }, [isLoading]);
 
   const handleIncrement = async(productId, userEmail) => {
     try {
@@ -50,6 +53,7 @@ export const Cart = () => {
             },
           }
         );
+        fetchOrder();
         console.log('Item added to cart:', response.data);
       } catch (error) {
         console.error('Error adding item to cart:', error);
@@ -71,6 +75,7 @@ export const Cart = () => {
             },
           }
         );
+        fetchOrder();
         console.log('Item added to cart:', response.data);
       } catch (error) {
         console.error('Error adding item to cart:', error);
@@ -117,6 +122,7 @@ export const Cart = () => {
               <Typography variant="h6">
                 Grand Total: Rs.{order.orderGrandTotal}
               </Typography>
+              <CheckoutButton userEmail={user.email} />
             </Box>
           ) : (
             <Typography variant="body1">Your cart is empty.</Typography>
