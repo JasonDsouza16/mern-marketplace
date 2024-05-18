@@ -11,6 +11,27 @@ exports.createUser = async (req, res) => {
   }
 };
 
+exports.createOrUpdateUser = async (req, res) => {
+  const { name, email } = req.body;
+
+  try {
+    let user = await User.findOne({ email });
+
+    if (user) {
+      // Update existing user
+      user.name = name;
+    } else {
+      // Create new user
+      user = new User({ name, email });
+    }
+
+    await user.save();
+    res.status(200).json(user);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
 exports.getAllUsers = async (req, res) => {
   try {
     const users = await User.find().populate('ownedItems orders');
