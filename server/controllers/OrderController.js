@@ -116,8 +116,8 @@ exports.createPaymentIntent = async (req, res) => {
  payment_method_types: ['card'],
       line_items: lineItems,
       mode: 'payment',
-      success_url: `${process.env.CLIENT_URL}/success?session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `${process.env.CLIENT_URL}/cancel`,
+      success_url: `${process.env.CLIENT_URL}/transaction-success?session_id={CHECKOUT_SESSION_ID}`,
+      cancel_url: `${process.env.CLIENT_URL}/transaction-fail`,
       metadata: {
         orderId: userOrder._id.toString(),
       },
@@ -130,25 +130,25 @@ exports.createPaymentIntent = async (req, res) => {
   }
 };
 
-exports.handleWebhook = (req, res) => {
-  const sig = req.headers['stripe-signature'];
-  let event;
+// exports.handleWebhook = (req, res) => {
+//   const sig = req.headers['stripe-signature'];
+//   let event;
 
-  try {
-    event = stripe.webhooks.constructEvent(req.body, sig, process.env.STRIPE_WEBHOOK_SECRET);
-  } catch (err) {
-    return res.status(400).send(`Webhook Error: ${err.message}`);
-  }
+//   try {
+//     event = stripe.webhooks.constructEvent(req.body, sig, process.env.STRIPE_WEBHOOK_SECRET);
+//   } catch (err) {
+//     return res.status(400).send(`Webhook Error: ${err.message}`);
+//   }
 
-  if (event.type === 'payment_intent.succeeded') {
-    const paymentIntent = event.data.object;
+//   if (event.type === 'payment_intent.succeeded') {
+//     const paymentIntent = event.data.object;
 
-    // Handle successful payment here (update order status, etc.)
-    console.log('PaymentIntent was successful!');
-  }
+//     // Handle successful payment here (update order status, etc.)
+//     console.log('PaymentIntent was successful!');
+//   }
 
-  res.json({ received: true });
-};
+//   res.json({ received: true });
+// };
 
 
 
@@ -160,6 +160,31 @@ exports.getAllOrders = async (req, res) => {
     res.status(500).json({ message: error.message });
   }
 };
+
+exports.getOrdersByUserEmail = async (req, res) => {
+  try {
+    const userEmail = req.params.userEmail;
+
+    // Find the user by email
+    const user = await User.findOne({ email: userEmail });
+
+    // If user not found, return 404
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    // Find all orders for the user
+    const orders = await Order.find({ user: user._id }).populate('items.item');
+
+    res.status(200).json(orders);
+  } catch (error) {
+    console.error('Error fetching orders:', error);
+    res.status(500).json({ message: 'Internal server error' });
+  }
+};
+
+
+
 
 exports.getOrderById = async (req, res) => {
   try {
@@ -194,5 +219,28 @@ exports.deleteOrder = async (req, res) => {
     res.json({ message: 'Order deleted successfully' });
   } catch (error) {
     res.status(500).json({ message: error.message });
+  }
+};
+
+//required 
+exports.updateSuccessOrderStatus = async (req, res) => {
+  const { sessionId } = req.body;
+
+  try {
+    const session = await stripe.checkout.sessions.retrieve(sessionId);
+
+    if (!session) {
+      return res.status(404).json({ error: 'Session not found' });
+    }
+
+    const orderId = session.metadata.orderId;
+
+    // Update the order date and status to "ordered"
+    await Order.findByIdAndUpdate(orderId, { status: 'ordered', date: Date.now });
+
+    res.status(200).json({ message: 'Order status updated successfully' });
+  } catch (error) {
+    console.error('Error updating order status:', error);
+    res.status(500).json({ error: 'Internal server error' });
   }
 };
