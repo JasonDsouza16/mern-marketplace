@@ -1,4 +1,5 @@
 const Item = require('../models/Item');
+const User = require('../models/User');
 
 exports.createItem = async (req, res) => {
   try {
@@ -10,12 +11,29 @@ exports.createItem = async (req, res) => {
   }
 };
 
+//required. populate necessary?
 exports.getAllItems = async (req, res) => {
   try {
     const items = await Item.find().populate('seller');
     res.json(items);
   } catch (error) {
     res.status(500).json({ message: error.message });
+  }
+};
+
+
+//required
+exports.getAllItemsByUserEmail = async (req, res) => {
+  try {
+    const email = req.params.userEmail;
+    const user = await User.findOne({ email });
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+    const items = await Item.find({ seller: user._id });
+    res.status(200).json(items);
+  } catch (err) {
+    res.status(500).json({ message: err.message });
   }
 };
 

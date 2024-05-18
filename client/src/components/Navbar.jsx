@@ -24,7 +24,7 @@ export const Navbar = () => {
 
   const { loginWithRedirect, logout, user, isAuthenticated } = useAuth0();
 
-  const pages = ["Home", "My Products", "My Orders"];
+  const pages = isAuthenticated ? ["Home", "My Products", "My Orders"] : ["Home"];
   const settings = isAuthenticated ? ["Profile", "Logout"] : ["Login"];
 
   const handleOpenNavMenu = (event) => {
