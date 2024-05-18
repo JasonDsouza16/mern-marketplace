@@ -17,7 +17,7 @@ import Loader from "../components/Loader";
 
 export const Cart = () => {
   const [order, setOrder] = useState(null);
-  const { user, isLoading } = useAuth0();
+  const { user, isLoading, getAccessTokenSilently } = useAuth0();
 
   useEffect(() => {
     const fetchOrder = async () => {
@@ -26,18 +26,56 @@ export const Cart = () => {
           `http://localhost:4000/api/users/userCart/${user.email}`
         );
         setOrder(response.data);
-        console.log(order);
+        console.warn(response.data);
       } catch (error) {
         console.error("Error fetching order:", error);
       }
     };
 
     fetchOrder();
-  }, [isLoading]);
+  }, [isLoading,order]);
 
-  const handleIncrement = () => {};
+  const handleIncrement = async(productId, userEmail) => {
+    try {
+        const token = await getAccessTokenSilently();
+        const response = await axios.post(
+          'http://localhost:4000/api/orders',
+          { productId: productId,
+            userEmail: userEmail,
+            quantity: 1
+          },
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+        console.log('Item added to cart:', response.data);
+      } catch (error) {
+        console.error('Error adding item to cart:', error);
+      }
+  };
 
-  const handleDecrement = () => {};
+  const handleDecrement = async(productId, userEmail) => {
+    try {
+        const token = await getAccessTokenSilently();
+        const response = await axios.post(
+          'http://localhost:4000/api/orders',
+          { productId: productId,
+            userEmail: userEmail,
+            quantity: -1
+          },
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+        console.log('Item added to cart:', response.data);
+      } catch (error) {
+        console.error('Error adding item to cart:', error);
+      }
+  };
 
   return (
     <>
@@ -52,32 +90,32 @@ export const Cart = () => {
             <Box>
               <List>
                 {order.items.map((item) => (
-                  <ListItem key={item._id}>
+                  <ListItem sx={{border:"1px solid"}} key={item._id}>
                     <ListItemText
-                      primary={item.name}
-                      secondary={`Price: Rs.${item.price}, Quantity: ${item.quantity}`}
+                      primary={item.item.name}
+                      secondary={`Price: Rs.${item.item.price}, Quantity: ${item.quantity}`}
                     />
                     <ListItemSecondaryAction>
-                      <IconButton
+                    <IconButton
                         edge="end"
-                        aria-label="add"
-                        onClick={() => handleIncrement(item._id)}
+                        aria-label="remove"
+                        onClick={() => handleDecrement(item.item._id, user.email)}
                       >
-                        <AddIcon />
+                        <RemoveIcon />
                       </IconButton>
                       <IconButton
                         edge="end"
-                        aria-label="remove"
-                        onClick={() => handleDecrement(item._id)}
+                        aria-label="add"
+                        onClick={() => handleIncrement(item.item._id, user.email)}
                       >
-                        <RemoveIcon />
+                        <AddIcon />
                       </IconButton>
                     </ListItemSecondaryAction>
                   </ListItem>
                 ))}
               </List>
               <Typography variant="h6">
-                Grand Total: Rs.{order.grandTotal}
+                Grand Total: Rs.{order.orderGrandTotal}
               </Typography>
             </Box>
           ) : (

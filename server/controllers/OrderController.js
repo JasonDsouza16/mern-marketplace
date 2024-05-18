@@ -16,13 +16,8 @@ exports.createOrder = async (req, res) => {
 //required
 exports.createOrUpdateOrder = async (req, res) => {
   try {
-    // Extract product ID, user email, and quantity from request body
+    // Extract product ID and user email from request body
     const { productId, userEmail, quantity } = req.body;
-
-    // Ensure quantity is a positive integer
-    if (!Number.isInteger(quantity) || quantity <= 0) {
-      return res.status(400).json({ message: 'Quantity must be a positive integer' });
-    }
 
     // Find the user by email
     let user = await User.findOne({ email: userEmail });
@@ -33,47 +28,43 @@ exports.createOrUpdateOrder = async (req, res) => {
     }
 
     // Find the user's cart order with status "in cart"
-    let cartOrder = await Order.findOne({ user: user._id, status: 'in cart' });
+    let cartOrder = await Order.findOne({ user: user._id, status: 'in cart' }).populate('items.item');
 
     // If no cart order exists, create a new one
     if (!cartOrder) {
       cartOrder = new Order({
         user: user._id,
         status: 'in cart',
+        items: [], // Initialize empty items array
       });
-      await cartOrder.save();
     }
 
-    // Find if the item already exists in the user's orders
-    const existingOrderItem = cartOrder.items.find(orderItem => orderItem.item.toString() === productId);
+    // Find if the item already exists in the cart order's items
+    const existingOrderItemIndex = cartOrder.items.findIndex(orderItem => orderItem.item._id.toString() === productId);
 
-    // If the item already exists, update its quantity
-    if (existingOrderItem) {
-      existingOrderItem.quantity += quantity;
-      await cartOrder.save();
+    // If the item already exists, increment its quantity by 1
+    if (existingOrderItemIndex !== -1) {
+      cartOrder.items[existingOrderItemIndex].quantity += quantity;
+      if (cartOrder.items[existingOrderItemIndex].quantity <= 0) {
+        cartOrder.items.splice(existingOrderItemIndex, 1);
+      }
     } else {
-      // If the item doesn't exist, create a new order item
+      // If the item doesn't exist, create a new order item with quantity 1
       const orderItem = {
         item: productId,
-        quantity: quantity,
+        quantity: 1,
       };
 
-      // Save the order item to the database
+      // Push the order item to the cart order's items array
       cartOrder.items.push(orderItem);
-      await cartOrder.save();
     }
 
-    // Fetch the order ID
-    const orderId = cartOrder._id;
+    // Calculate the grand total for the order
+    await cartOrder.populate('items.item'); // Ensure items are populated with their details
+    cartOrder.orderGrandTotal = calculateOrderGrandTotal(cartOrder.items);
 
-    // Check if the order ID already exists in the user's orders
-    const existingOrder = user.orders.find(order => order.toString() === orderId.toString());
-
-    // If the order ID doesn't exist, add it to the user's orders array
-    if (!existingOrder) {
-      user.orders.push(orderId);
-      await user.save();
-    }
+    // Save the cart order to the database
+    await cartOrder.save();
 
     // Return success response
     res.status(200).json({ message: 'Order updated successfully' });
@@ -83,6 +74,25 @@ exports.createOrUpdateOrder = async (req, res) => {
     res.status(500).json({ message: 'Internal server error' });
   }
 };
+
+
+// Function to calculate the grand total for the order
+const calculateOrderGrandTotal = (items) => {
+  let total = 0;
+  for (const item of items) {
+    // Check if the item and its price are defined
+    if (item.item && item.item.price) {
+      console.log(item.quantity , item.item.price)
+      total += item.quantity * item.item.price;
+    }
+  }
+  console.log(total)
+  return total;
+};
+
+
+
+
 
 
 exports.getAllOrders = async (req, res) => {
