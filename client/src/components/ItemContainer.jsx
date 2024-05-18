@@ -1,9 +1,11 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
-import { Card, CardContent, CardMedia, Grid, Typography, Container } from '@mui/material';
+import { useAuth0 } from "@auth0/auth0-react";
+import { Card, CardContent, CardMedia, Grid, Typography, Container, Button } from '@mui/material';
 
 export const ItemContainer = () => {
   const [items, setItems] = useState([]);
+  const { isAuthenticated, getAccessTokenSilently, user } = useAuth0();
 
   useEffect(() => {
     const fetchItems = async () => {
@@ -17,6 +19,27 @@ export const ItemContainer = () => {
 
     fetchItems();
   }, []);
+
+  const handleAddToCart = async (productId, userEmail) => {
+    try {
+      const token = await getAccessTokenSilently();
+      const response = await axios.post(
+        'http://localhost:4000/api/orders',
+        { productId: productId,
+          userEmail: userEmail,
+          quantity: 30
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+      console.log('Item added to cart:', response.data);
+    } catch (error) {
+      console.error('Error adding item to cart:', error);
+    }
+  };
 
   return (
     <Container>
@@ -43,6 +66,11 @@ export const ItemContainer = () => {
                 <Typography variant="body2" color="text.primary">
                   Price: Rs.{item.price}
                 </Typography>
+                {isAuthenticated && (
+          <Button variant="contained" color="primary" onClick={()=>handleAddToCart(item._id, user.email)}>
+            Add to Cart
+          </Button>
+        )}
               </CardContent>
             </Card>
           </Grid>
