@@ -15,7 +15,7 @@ export const ItemContainer = () => {
   useEffect(() => {
     const fetchItems = async () => {
       try {
-        const response = await axios.get('http://localhost:4000/api/items');
+        const response = await axios.get('http://localhost:4000/api/items/approvedItems');
         setItems(response.data);
         // Initially display all items
         setFilteredItems(response.data);
@@ -108,7 +108,7 @@ export const ItemContainer = () => {
         </Grid>
         <Grid item xs={12} sm={4}>
           <TextField
-            label="Search"
+            label="Search products"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             fullWidth

@@ -20,7 +20,7 @@ export const HomePage = () => {
           };
 
           // Check if the user's email is xyz-sa@gmail.com
-          if (user.email === "adminEmail") {
+          if (user.email === "mern.marketplace.sa@gmail.com") {
             console.log('match')
             userData = {
               ...userData,
