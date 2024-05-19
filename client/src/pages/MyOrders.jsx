@@ -1,12 +1,27 @@
-import React, { useEffect, useState } from 'react';
-import axios from 'axios';
-import { Accordion, AccordionDetails, AccordionSummary, Typography, Container, Box, Grid } from '@mui/material';
-import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
+import React, { useEffect, useState } from "react";
+import axios from "axios";
+import {
+  Accordion,
+  AccordionDetails,
+  AccordionSummary,
+  Typography,
+  Container,
+  Box,
+  Grid,
+  MenuItem,
+  Button,
+  TextField,
+} from "@mui/material";
+import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import { useAuth0 } from "@auth0/auth0-react";
-import Loader from '../components/Loader';
+import Loader from "../components/Loader";
 
 export const MyOrders = () => {
   const [orders, setOrders] = useState([]);
+  const [filteredOrders, setFilteredOrders] = useState([]);
+  const [statusFilter, setStatusFilter] = useState("");
+  const [startDateFilter, setStartDateFilter] = useState("");
+  const [endDateFilter, setEndDateFilter] = useState("");
   const { user, getAccessTokenSilently, isLoading } = useAuth0();
 
   useEffect(() => {
@@ -23,8 +38,9 @@ export const MyOrders = () => {
           }
         );
         setOrders(response.data);
+        setFilteredOrders(response.data);
       } catch (error) {
-        console.error('Error fetching orders:', error);
+        console.error("Error fetching orders:", error);
       }
     };
 
@@ -32,6 +48,32 @@ export const MyOrders = () => {
       fetchOrders();
     }
   }, [isLoading, getAccessTokenSilently, user]);
+
+  const handleFilterChange = () => {
+    // Check if end date is greater than start date
+    if (startDateFilter && endDateFilter && new Date(startDateFilter) >= new Date(endDateFilter)) {
+      alert("End date must be greater than start date");
+      return; // Stop execution if end date is not greater than start date
+    }
+  
+    let filtered = orders;
+  
+    if (statusFilter) {
+      filtered = filtered.filter((order) => order.status === statusFilter);
+    }
+  
+    if (startDateFilter && endDateFilter) {
+      filtered = filtered.filter((order) => {
+        const orderDate = new Date(order.orderDate);
+        const startDate = new Date(startDateFilter);
+        const endDate = new Date(endDateFilter);
+  
+        return orderDate >= startDate && orderDate <= endDate;
+      });
+    }
+  
+    setFilteredOrders(filtered);
+  };
 
   return (
     <>
@@ -42,25 +84,68 @@ export const MyOrders = () => {
           <Typography variant="h4" gutterBottom>
             My Orders
           </Typography>
-          {orders.map((order) => (
-            <Accordion key={order._id} sx={{ marginBottom: '1rem' }}>
+
+          <Box mb={3}>
+            <Grid container spacing={2} alignItems="center">
+              <Grid item xs={12} sm={4}>
+                <TextField
+                  select
+                  label="Status"
+                  value={statusFilter}
+                  onChange={(e) => setStatusFilter(e.target.value)}
+                  fullWidth
+                >
+                  <MenuItem value="">
+                    <em>All</em>
+                  </MenuItem>
+                  <MenuItem value="ordered">Ordered</MenuItem>
+                  <MenuItem value="cancelled">Cancelled</MenuItem>
+                </TextField>
+              </Grid>
+
+              <Grid item xs={12} sm={3}>
+                <CustomDatePicker
+                  label="Start Date"
+                  value={startDateFilter}
+                  onChange={setStartDateFilter}
+                />
+              </Grid>
+
+              <Grid item xs={12} sm={3}>
+                <CustomDatePicker
+                  label="End Date"
+                  value={endDateFilter}
+                  onChange={setEndDateFilter}
+                />
+              </Grid>
+
+              <Grid item xs={12} sm={2}>
+                <Button
+                  variant="contained"
+                  color="primary"
+                  onClick={handleFilterChange}
+                >
+                  Apply Filters
+                </Button>
+              </Grid>
+            </Grid>
+          </Box>
+
+          {filteredOrders.map((order) => (
+            <Accordion key={order._id} sx={{ marginBottom: "1rem" }}>
               <AccordionSummary expandIcon={<ExpandMoreIcon />}>
                 <Grid container spacing={2} alignItems="center">
                   <Grid item xs={12} sm={3}>
                     <Typography variant="subtitle1" fontWeight="bold">
                       Order ID:
                     </Typography>
-                    <Typography variant="body2">
-                      {order._id}
-                    </Typography>
+                    <Typography variant="body2">{order._id}</Typography>
                   </Grid>
                   <Grid item xs={12} sm={2}>
                     <Typography variant="subtitle1" fontWeight="bold">
                       Status:
                     </Typography>
-                    <Typography variant="body2">
-                      {order.status}
-                    </Typography>
+                    <Typography variant="body2">{order.status}</Typography>
                   </Grid>
                   <Grid item xs={12} sm={3}>
                     <Typography variant="subtitle1" fontWeight="bold">
@@ -82,10 +167,12 @@ export const MyOrders = () => {
               </AccordionSummary>
               <AccordionDetails>
                 <Box>
-                  <Typography variant="subtitle1" fontWeight="bold">Items:</Typography>
+                  <Typography variant="subtitle1" fontWeight="bold">
+                    Items:
+                  </Typography>
                   <ul>
                     {order.items.map((item) => (
-                      <li key={item._id} style={{ marginBottom: '0.5rem' }}>
+                      <li key={item._id} style={{ marginBottom: "0.5rem" }}>
                         <Box>
                           <Typography variant="body2">
                             <strong>Item:</strong> {item.item.name}
@@ -107,5 +194,20 @@ export const MyOrders = () => {
         </Container>
       )}
     </>
+  );
+};
+
+const CustomDatePicker = ({ label, value, onChange }) => {
+  return (
+    <TextField
+      type="date"
+      label={label}
+      value={value}
+      onChange={(e) => onChange(e.target.value)}
+      fullWidth
+      InputLabelProps={{
+        shrink: true,
+      }}
+    />
   );
 };

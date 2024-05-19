@@ -89,6 +89,13 @@ export const MyItems = () => {
       if (response.status === 201) {
         fetchProducts(); // Refresh products list
         handleClose();
+        setNewProduct({
+          name: "",
+          description: "",
+          category: "",
+          price: "",
+          image: "",
+        });
       }
     } catch (error) {
       console.error("Error adding product:", error);
@@ -145,6 +152,9 @@ export const MyItems = () => {
                         {product.description}
                       </Typography>
                       <Typography variant="body2" color="text.primary">
+                        Category: {product.category}
+                      </Typography>
+                      <Typography variant="body2" color="text.primary">
                         Price: Rs.{product.price}
                       </Typography>
                     </CardContent>
@@ -162,86 +172,85 @@ export const MyItems = () => {
                 top: "50%",
                 left: "50%",
                 transform: "translate(-50%, -50%)",
-                    width: 400,
-                    bgcolor: "background.paper",
-                    boxShadow: 24,
-                    p: 4,
-                  }}
+                width: 400,
+                bgcolor: "background.paper",
+                boxShadow: 24,
+                p: 4,
+              }}
+            >
+              <Typography variant="h6" component="h2" gutterBottom>
+                Add New Product
+              </Typography>
+              <TextField
+                margin="normal"
+                required
+                fullWidth
+                id="name"
+                label="Name"
+                name="name"
+                value={newProduct.name}
+                onChange={handleInputChange}
+              />
+              <TextField
+                margin="normal"
+                required
+                fullWidth
+                id="description"
+                label="Description"
+                name="description"
+                value={newProduct.description}
+                onChange={handleInputChange}
+              />
+              <FormControl fullWidth margin="normal" required>
+                <InputLabel id="category-label">Category</InputLabel>
+                <Select
+                  labelId="category-label"
+                  id="category"
+                  name="category"
+                  value={newProduct.category}
+                  onChange={handleInputChange}
+                  label="Category"
                 >
-                  <Typography variant="h6" component="h2" gutterBottom>
-                    Add New Product
-                  </Typography>
-                  <TextField
-                    margin="normal"
-                    required
-                    fullWidth
-                    id="name"
-                    label="Name"
-                    name="name"
-                    value={newProduct.name}
-                    onChange={handleInputChange}
-                  />
-                  <TextField
-                    margin="normal"
-                    required
-                    fullWidth
-                    id="description"
-                    label="Description"
-                    name="description"
-                    value={newProduct.description}
-                    onChange={handleInputChange}
-                  />
-                  <FormControl fullWidth margin="normal" required>
-                    <InputLabel id="category-label">Category</InputLabel>
-                    <Select
-                      labelId="category-label"
-                      id="category"
-                      name="category"
-                      value={newProduct.category}
-                      onChange={handleInputChange}
-                      label="Category"
-                    >
-                      {categories.map((category) => (
-                        <MenuItem key={category} value={category}>
-                          {category}
-                        </MenuItem>
-                      ))}
-                    </Select>
-                  </FormControl>
-                  <TextField
-                    margin="normal"
-                    required
-                    fullWidth
-                    id="price"
-                    label="Price"
-                    name="price"
-                    type="number"
-                    value={newProduct.price}
-                    onChange={handleInputChange}
-                  />
-                  <TextField
-                    margin="normal"
-                    fullWidth
-                    id="image"
-                    label="Image URL"
-                    name="image"
-                    value={newProduct.image}
-                    onChange={handleInputChange}
-                  />
-                  <Button
-                    type="submit"
-                    fullWidth
-                    variant="contained"
-                    color="primary"
-                    sx={{ mt: 3, mb: 2 }}
-                  >
-                    Add Product
-                  </Button>
-                </Box>
-              </Modal>
-            </Container>
-          )}
-        </>
-      );
-    };
-    
+                  {categories.map((category) => (
+                    <MenuItem key={category} value={category}>
+                      {category}
+                    </MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
+              <TextField
+                margin="normal"
+                required
+                fullWidth
+                id="price"
+                label="Price"
+                name="price"
+                type="number"
+                value={newProduct.price}
+                onChange={handleInputChange}
+              />
+              <TextField
+                margin="normal"
+                fullWidth
+                id="image"
+                label="Image URL"
+                name="image"
+                value={newProduct.image}
+                onChange={handleInputChange}
+              />
+              <Button
+                type="submit"
+                fullWidth
+                variant="contained"
+                color="primary"
+                sx={{ mt: 3, mb: 2 }}
+              >
+                Add Product
+              </Button>
+            </Box>
+          </Modal>
+        </Container>
+      )}
+    </>
+  );
+};
