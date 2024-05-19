@@ -19,7 +19,7 @@ import Loader from "../components/Loader";
 export const MyOrders = () => {
   const [orders, setOrders] = useState([]);
   const [filteredOrders, setFilteredOrders] = useState([]);
-  const [statusFilter, setStatusFilter] = useState("");
+  const [statusFilter, setStatusFilter] = useState("ordered");
   const [startDateFilter, setStartDateFilter] = useState("");
   const [endDateFilter, setEndDateFilter] = useState("");
   const { user, getAccessTokenSilently, isLoading } = useAuth0();
@@ -37,8 +37,14 @@ export const MyOrders = () => {
             },
           }
         );
-        setOrders(response.data);
-        setFilteredOrders(response.data);
+        const orderedOrders = response.data.filter(
+          (order) => order.status === "ordered"
+        );
+        const sortedOrders = orderedOrders.sort(
+          (a, b) => new Date(b.orderDate) - new Date(a.orderDate)
+        );
+        setOrders(sortedOrders);
+        setFilteredOrders(sortedOrders);
       } catch (error) {
         console.error("Error fetching orders:", error);
       }
@@ -50,28 +56,30 @@ export const MyOrders = () => {
   }, [isLoading, getAccessTokenSilently, user]);
 
   const handleFilterChange = () => {
-    // Check if end date is greater than start date
-    if (startDateFilter && endDateFilter && new Date(startDateFilter) >= new Date(endDateFilter)) {
+    if (
+      startDateFilter &&
+      endDateFilter &&
+      new Date(startDateFilter) >= new Date(endDateFilter)
+    ) {
       alert("End date must be greater than start date");
-      return; // Stop execution if end date is not greater than start date
+      return;
     }
-  
+
     let filtered = orders;
-  
+
     if (statusFilter) {
       filtered = filtered.filter((order) => order.status === statusFilter);
     }
-  
+
     if (startDateFilter && endDateFilter) {
       filtered = filtered.filter((order) => {
         const orderDate = new Date(order.orderDate);
         const startDate = new Date(startDateFilter);
         const endDate = new Date(endDateFilter);
-  
         return orderDate >= startDate && orderDate <= endDate;
       });
     }
-  
+
     setFilteredOrders(filtered);
   };
 

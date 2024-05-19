@@ -28,58 +28,61 @@ export const Cart = () => {
         `http://localhost:4000/api/users/userCart/${user.email}`
       );
       setOrder(response.data);
-      console.warn(response.data);
     } catch (error) {
       console.error("Error fetching order:", error);
     }
   };
 
   useEffect(() => {
-    fetchOrder();
+    if (!isLoading) {
+      fetchOrder();
+    }
   }, [isLoading]);
 
-  const handleIncrement = async(productId, userEmail) => {
+  const handleIncrement = async (productId, userEmail) => {
     try {
-        const token = await getAccessTokenSilently();
-        const response = await axios.post(
-          'http://localhost:4000/api/orders',
-          { productId: productId,
-            userEmail: userEmail,
-            quantity: 1
+      const token = await getAccessTokenSilently();
+      const response = await axios.post(
+        'http://localhost:4000/api/orders',
+        {
+          productId: productId,
+          userEmail: userEmail,
+          quantity: 1
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
           },
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          }
-        );
-        fetchOrder();
-        console.log('Item added to cart:', response.data);
-      } catch (error) {
-        console.error('Error adding item to cart:', error);
-      }
+        }
+      );
+      fetchOrder();
+      console.log('Item added to cart:', response.data);
+    } catch (error) {
+      console.error('Error adding item to cart:', error);
+    }
   };
 
-  const handleDecrement = async(productId, userEmail) => {
+  const handleDecrement = async (productId, userEmail) => {
     try {
-        const token = await getAccessTokenSilently();
-        const response = await axios.post(
-          'http://localhost:4000/api/orders',
-          { productId: productId,
-            userEmail: userEmail,
-            quantity: -1
+      const token = await getAccessTokenSilently();
+      const response = await axios.post(
+        'http://localhost:4000/api/orders',
+        {
+          productId: productId,
+          userEmail: userEmail,
+          quantity: -1
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
           },
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          }
-        );
-        fetchOrder();
-        console.log('Item added to cart:', response.data);
-      } catch (error) {
-        console.error('Error adding item to cart:', error);
-      }
+        }
+      );
+      fetchOrder();
+      console.log('Item removed from cart:', response.data);
+    } catch (error) {
+      console.error('Error removing item from cart:', error);
+    }
   };
 
   return (
@@ -91,17 +94,17 @@ export const Cart = () => {
           <Typography variant="h4" gutterBottom>
             Shopping Cart
           </Typography>
-          {order ? (
+          {order && order.items.length > 0 ? (
             <Box>
               <List>
                 {order.items.map((item) => (
-                  <ListItem sx={{border:"1px solid"}} key={item._id}>
+                  <ListItem sx={{ border: "1px solid" }} key={item._id}>
                     <ListItemText
                       primary={item.item.name}
                       secondary={`Price: Rs.${item.item.price}, Quantity: ${item.quantity}`}
                     />
                     <ListItemSecondaryAction>
-                    <IconButton
+                      <IconButton
                         edge="end"
                         aria-label="remove"
                         onClick={() => handleDecrement(item.item._id, user.email)}

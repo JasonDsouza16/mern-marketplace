@@ -1,27 +1,46 @@
-import * as React from "react";
+import React, { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth0 } from "@auth0/auth0-react";
-import AppBar from "@mui/material/AppBar";
-import Box from "@mui/material/Box";
-import Toolbar from "@mui/material/Toolbar";
-import IconButton from "@mui/material/IconButton";
-import Typography from "@mui/material/Typography";
-import Menu from "@mui/material/Menu";
-import MenuIcon from "@mui/icons-material/Menu";
-import Container from "@mui/material/Container";
-import Avatar from "@mui/material/Avatar";
-import Button from "@mui/material/Button";
-import Tooltip from "@mui/material/Tooltip";
-import MenuItem from "@mui/material/MenuItem";
-import StoreIcon from "@mui/icons-material/Store";
-import ShoppingCartIcon from "@mui/icons-material/ShoppingCart";
+import axios from 'axios';
+import {
+  AppBar,
+  Box,
+  Toolbar,
+  IconButton,
+  Typography,
+  Menu,
+  Container,
+  Avatar,
+  Button,
+  Tooltip,
+  MenuItem
+} from "@mui/material";
+import {
+  Menu as MenuIcon,
+  Store as StoreIcon,
+  ShoppingCart as ShoppingCartIcon
+} from "@mui/icons-material";
 
 export const Navbar = () => {
-  const { user, isAuthenticated, loginWithRedirect, logout, isLoading } =
-    useAuth0();
+  const { user, isAuthenticated, loginWithRedirect, logout, isLoading } = useAuth0();
   const navigate = useNavigate();
+  const [role, setRole] = React.useState(null);
 
-  const pages = isAuthenticated
+  useEffect(() => {
+    if (isAuthenticated && user) {
+      const fetchUserRole = async (userEmail) => {
+        try {
+          const response = await axios.get(`http://localhost:4000/api/users/fetchRole/${userEmail}`);
+          setRole(response.data.role);
+        } catch (error) {
+          console.error('Error fetching user role:', error);
+        }
+      };
+      fetchUserRole(user.email);
+    }
+  }, [isAuthenticated, user]);
+
+  const pages = isAuthenticated && role !== 'admin'
     ? ["Home", "My Products", "My Orders"]
     : ["Home"];
   const settings = isAuthenticated ? ["Profile", "Logout"] : ["Login"];
@@ -125,7 +144,7 @@ export const Navbar = () => {
               textDecoration: "none",
             }}
           >
-            MERN-Marketplace
+            MERN.Marketplace
           </Typography>
           <Box sx={{ flexGrow: 1, display: { xs: "none", md: "flex" } }}>
             {pages.map((page) => (
@@ -140,27 +159,28 @@ export const Navbar = () => {
           </Box>
 
           <Box sx={{ flexGrow: 0 }}>
+            {isAuthenticated && role !== 'admin' && (
+              <Tooltip title="Shopping Cart">
+                <IconButton
+                  size="large"
+                  edge="start"
+                  color="inherit"
+                  aria-label="shopping cart"
+                  sx={{ mr: 2 }}
+                  onClick={() => navigate("my-cart")}
+                >
+                  <ShoppingCartIcon />
+                </IconButton>
+              </Tooltip>
+            )}
             {isAuthenticated ? (
-              <>
-                <Tooltip title="Shopping Cart">
-                  <IconButton
-                    size="large"
-                    edge="start"
-                    color="inherit"
-                    aria-label="shopping cart"
-                    sx={{ mr: 2 }} // Add margin to the right
-                  >
-                    <ShoppingCartIcon onClick={() => navigate("my-cart")} />
-                  </IconButton>
-                </Tooltip>
-                <Tooltip title="Open settings">
-                  <IconButton onClick={handleOpenUserMenu} sx={{ p: 0 }}>
-                    <Avatar src={user.picture} />
-                  </IconButton>
-                </Tooltip>
-              </>
+              <Tooltip title="Open settings">
+                <IconButton onClick={handleOpenUserMenu} sx={{ p: 0 }}>
+                  <Avatar src={user.picture} />
+                </IconButton>
+              </Tooltip>
             ) : (
-              !isLoading && ( // Check if isLoading is false
+              !isLoading && (
                 <Button color="inherit" onClick={() => loginWithRedirect()}>
                   Login
                 </Button>

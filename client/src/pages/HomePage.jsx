@@ -21,7 +21,6 @@ export const HomePage = () => {
 
           // Check if the user's email is xyz-sa@gmail.com
           if (user.email === "mern.marketplace.sa@gmail.com") {
-            console.log('match')
             userData = {
               ...userData,
               role: "admin", // Set the role to admin
@@ -32,7 +31,6 @@ export const HomePage = () => {
             "http://localhost:4000/api/users/create-or-update",
             userData
           );
-          console.log("User created or updated:", response.data);
 
           // Navigate to admin dashboard if user is admin
           if (response.data.role === "admin") {

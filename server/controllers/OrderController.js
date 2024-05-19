@@ -1,7 +1,7 @@
-const Order = require('../models/Order');
-const User = require('../models/User');
-const OrderItem = require('../models/orderItem');
-const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
+const Order = require("../models/Order");
+const User = require("../models/User");
+const OrderItem = require("../models/orderItem");
+const stripe = require("stripe")(process.env.STRIPE_SECRET_KEY);
 
 exports.createOrder = async (req, res) => {
   try {
@@ -24,23 +24,28 @@ exports.createOrUpdateOrder = async (req, res) => {
 
     // If user not found, return 404
     if (!user) {
-      return res.status(404).json({ message: 'User not found' });
+      return res.status(404).json({ message: "User not found" });
     }
 
     // Find the user's cart order with status "in cart"
-    let cartOrder = await Order.findOne({ user: user._id, status: 'in cart' }).populate('items.item');
+    let cartOrder = await Order.findOne({
+      user: user._id,
+      status: "in cart",
+    }).populate("items.item");
 
     // If no cart order exists, create a new one
     if (!cartOrder) {
       cartOrder = new Order({
         user: user._id,
-        status: 'in cart',
+        status: "in cart",
         items: [], // Initialize empty items array
       });
     }
 
     // Find if the item already exists in the cart order's items
-    const existingOrderItemIndex = cartOrder.items.findIndex(orderItem => orderItem.item._id.toString() === productId);
+    const existingOrderItemIndex = cartOrder.items.findIndex(
+      (orderItem) => orderItem.item._id.toString() === productId
+    );
 
     // If the item already exists, increment its quantity by 1
     if (existingOrderItemIndex !== -1) {
@@ -60,21 +65,20 @@ exports.createOrUpdateOrder = async (req, res) => {
     }
 
     // Calculate the grand total for the order
-    await cartOrder.populate('items.item'); // Ensure items are populated with their details
+    await cartOrder.populate("items.item"); // Ensure items are populated with their details
     cartOrder.orderGrandTotal = calculateOrderGrandTotal(cartOrder.items);
 
     // Save the cart order to the database
     await cartOrder.save();
 
     // Return success response
-    res.status(200).json({ message: 'Order updated successfully' });
+    res.status(200).json({ message: "Order updated successfully" });
   } catch (error) {
     // Handle errors
-    console.error('Error creating or updating order:', error);
-    res.status(500).json({ message: 'Internal server error' });
+    console.error("Error creating or updating order:", error);
+    res.status(500).json({ message: "Internal server error" });
   }
 };
-
 
 // Function to calculate the grand total for the order
 const calculateOrderGrandTotal = (items) => {
@@ -85,37 +89,38 @@ const calculateOrderGrandTotal = (items) => {
       total += item.quantity * item.item.price;
     }
   }
-  console.log(total)
   return total;
 };
 
-
 exports.createPaymentIntent = async (req, res) => {
   const { userEmail } = req.body;
-  console.log("email ",userEmail)
+  console.log("email ", userEmail);
   try {
-    const user = await User.findOne({email: userEmail}) 
-    const userOrder = await Order.findOne({ user: user._id, status: 'in cart' }).populate('items.item');
+    const user = await User.findOne({ email: userEmail });
+    const userOrder = await Order.findOne({
+      user: user._id,
+      status: "in cart",
+    }).populate("items.item");
 
     if (!userOrder) {
-      return res.status(404).json({ error: 'Order not found' });
+      return res.status(404).json({ error: "Order not found" });
     }
 
-    const lineItems = userOrder.items.map(orderItem => ({
+    const lineItems = userOrder.items.map((orderItem) => ({
       price_data: {
-        currency: 'inr',
+        currency: "inr",
         product_data: {
           name: orderItem.item.name,
         },
-        unit_amount: orderItem.item.price * 100, 
+        unit_amount: orderItem.item.price * 100,
       },
       quantity: orderItem.quantity,
     }));
 
     const session = await stripe.checkout.sessions.create({
- payment_method_types: ['card'],
+      payment_method_types: ["card"],
       line_items: lineItems,
-      mode: 'payment',
+      mode: "payment",
       success_url: `${process.env.CLIENT_URL}/transaction-success?session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${process.env.CLIENT_URL}/transaction-fail`,
       metadata: {
@@ -125,8 +130,8 @@ exports.createPaymentIntent = async (req, res) => {
 
     res.status(200).json({ id: session.id });
   } catch (error) {
-    console.error('Error creating checkout session:', error);
-    res.status(500).json({ error: 'Internal server error' });
+    console.error("Error creating checkout session:", error);
+    res.status(500).json({ error: "Internal server error" });
   }
 };
 
@@ -150,11 +155,9 @@ exports.createPaymentIntent = async (req, res) => {
 //   res.json({ received: true });
 // };
 
-
-
 exports.getAllOrders = async (req, res) => {
   try {
-    const orders = await Order.find().populate('user items.item');
+    const orders = await Order.find().populate("user items.item");
     res.json(orders);
   } catch (error) {
     res.status(500).json({ message: error.message });
@@ -164,34 +167,32 @@ exports.getAllOrders = async (req, res) => {
 exports.getOrdersByUserEmail = async (req, res) => {
   try {
     const userEmail = req.params.userEmail;
-    console.log('Inside ordeers', userEmail)
 
     // Find the user by email
     const user = await User.findOne({ email: userEmail });
 
     // If user not found, return 404
     if (!user) {
-      return res.status(404).json({ message: 'User not found' });
+      return res.status(404).json({ message: "User not found" });
     }
 
     // Find all orders for the user
-    const orders = await Order.find({ user: user._id }).populate('items.item');
+    const orders = await Order.find({ user: user._id }).populate("items.item");
 
     res.status(200).json(orders);
   } catch (error) {
-    console.error('Error fetching orders:', error);
-    res.status(500).json({ message: 'Internal server error' });
+    console.error("Error fetching orders:", error);
+    res.status(500).json({ message: "Internal server error" });
   }
 };
 
-
-
-
 exports.getOrderById = async (req, res) => {
   try {
-    const order = await Order.findById(req.params.id).populate('user items.item');
+    const order = await Order.findById(req.params.id).populate(
+      "user items.item"
+    );
     if (!order) {
-      return res.status(404).json({ message: 'Order not found' });
+      return res.status(404).json({ message: "Order not found" });
     }
     res.json(order);
   } catch (error) {
@@ -201,11 +202,15 @@ exports.getOrderById = async (req, res) => {
 
 exports.updateOrder = async (req, res) => {
   try {
-    const updatedOrder = await Order.findByIdAndUpdate(req.params.id, req.body, { new: true });
+    const updatedOrder = await Order.findByIdAndUpdate(
+      req.params.id,
+      req.body,
+      { new: true }
+    );
     if (!updatedOrder) {
-      return res.status(404).json({ message: 'Order not found' });
+      return res.status(404).json({ message: "Order not found" });
     }
-    res.json(updatedOrder)
+    res.json(updatedOrder);
   } catch (error) {
     res.status(400).json({ message: error.message });
   }
@@ -215,15 +220,15 @@ exports.deleteOrder = async (req, res) => {
   try {
     const deletedOrder = await Order.findByIdAndDelete(req.params.id);
     if (!deletedOrder) {
-      return res.status(404).json({ message: 'Order not found' });
+      return res.status(404).json({ message: "Order not found" });
     }
-    res.json({ message: 'Order deleted successfully' });
+    res.json({ message: "Order deleted successfully" });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
 };
 
-//required 
+//required
 exports.updateSuccessOrderStatus = async (req, res) => {
   const { sessionId } = req.body;
 
@@ -231,17 +236,20 @@ exports.updateSuccessOrderStatus = async (req, res) => {
     const session = await stripe.checkout.sessions.retrieve(sessionId);
 
     if (!session) {
-      return res.status(404).json({ error: 'Session not found' });
+      return res.status(404).json({ error: "Session not found" });
     }
 
     const orderId = session.metadata.orderId;
 
     // Update the order date and status to "ordered"
-    await Order.findByIdAndUpdate(orderId, { status: 'ordered', date: Date.now });
+    await Order.findByIdAndUpdate(orderId, {
+      status: "ordered",
+      date: Date.now,
+    });
 
-    res.status(200).json({ message: 'Order status updated successfully' });
+    res.status(200).json({ message: "Order status updated successfully" });
   } catch (error) {
-    console.error('Error updating order status:', error);
-    res.status(500).json({ error: 'Internal server error' });
+    console.error("Error updating order status:", error);
+    res.status(500).json({ error: "Internal server error" });
   }
 };

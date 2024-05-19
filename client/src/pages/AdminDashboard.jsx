@@ -1,14 +1,31 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
+import { useAuth0 } from '@auth0/auth0-react';
+import { useNavigate } from 'react-router-dom';
 import { Tab, Tabs, Typography, Container, Grid, Card, CardContent, Button, CardMedia, ButtonGroup, Tooltip } from '@mui/material';
+import HourglassTopIcon from '@mui/icons-material/HourglassTop';
 import AddTaskIcon from '@mui/icons-material/AddTask';
 import HighlightOffIcon from '@mui/icons-material/HighlightOff';
 import BlockIcon from '@mui/icons-material/Block';
+import Loader from '../components/Loader';
 
 export const AdminDashboard = () => {
+  const { isAuthenticated, user, isLoading } = useAuth0();
   const [items, setItems] = useState([]);
   const [filteredItems, setFilteredItems] = useState([]);
   const [statusFilter, setStatusFilter] = useState('ALL');
+  const [isAdmin, setIsAdmin] = useState(false);
+  const navigate = useNavigate();
+
+  const fetchUserRole = async (userEmail) => {
+    try {
+      const response = await axios.get(`http://localhost:4000/api/users/fetchRole/${userEmail}`);
+      return response.data.role;
+    } catch (error) {
+      console.error('Error fetching user role:', error);
+      return null;
+    }
+  };
 
   const fetchItems = async () => {
     try {
@@ -25,8 +42,19 @@ export const AdminDashboard = () => {
   };
 
   useEffect(() => {
-    fetchItems();
-  }, []);
+    if (isAuthenticated && user) {
+      const checkAdminStatus = async () => {
+        const role = await fetchUserRole(user.email);
+        if (role === 'admin') {
+          setIsAdmin(true);
+          fetchItems();
+        } else {
+          setIsAdmin(false);
+        }
+      };
+      checkAdminStatus();
+    }
+  }, [isAuthenticated, user]);
 
   const filterItems = (items, status) => {
     if (status === 'ALL') {
@@ -37,23 +65,26 @@ export const AdminDashboard = () => {
     }
   };
 
-  // Filter items based on status
   useEffect(() => {
     filterItems(items, statusFilter);
   }, [items, statusFilter]);
 
-  // Function to handle status change (approve/disapprove)
   const handleStatusChange = async (itemId, newStatus) => {
     try {
-      // Update status in the backend
       await axios.patch(`http://localhost:4000/api/items/${itemId}`, { status: newStatus });
-
-      // Refetch items from the backend to update the UI
       fetchItems();
     } catch (error) {
       console.error('Error updating item status:', error);
     }
   };
+
+  if (isLoading) {
+    return <Typography><Loader/></Typography>;
+  }
+
+  if (!isAuthenticated || !isAdmin) {
+    return <Typography>Please log in as an administrator to access this page.</Typography>;
+  }
 
   return (
     <Container>
@@ -73,7 +104,7 @@ export const AdminDashboard = () => {
         <Tab label="DISAPPROVED" value="disapproved" />
         <Tab label="SUSPENDED" value="suspended" />
       </Tabs>
-      <br/>
+      <br />
       <Grid container spacing={3}>
         {filteredItems.map(item => (
           <Grid item key={item._id} xs={12} sm={6} md={4}>
@@ -81,7 +112,7 @@ export const AdminDashboard = () => {
               <CardMedia
                 component="img"
                 height="200"
-                image={item.image} // Assuming image is a URL
+                image={item.image}
                 alt={item.name}
               />
               <CardContent>
@@ -101,34 +132,33 @@ export const AdminDashboard = () => {
                   Category: {item.category}
                 </Typography>
                 <ButtonGroup>
-                <Tooltip title="Approve item">
-                  <Button
-                    variant="contained"
-                    color="success"
-                    onClick={() => handleStatusChange(item._id, 'approved')}
-                    style={{ marginRight: '5px' }}
-                  >
-                    <AddTaskIcon/>
-                  </Button>
+                  <Tooltip title="Approve item">
+                    <Button
+                      variant="contained"
+                      color="success"
+                      onClick={() => handleStatusChange(item._id, 'approved')}
+                      style={{ marginRight: '5px' }}
+                    >
+                      <AddTaskIcon />
+                    </Button>
                   </Tooltip>
                   <Tooltip title="Disapprove item">
-                  <Button
-                    variant="contained"
-                    color="error"
-                    onClick={() => handleStatusChange(item._id, 'disapproved')}
-                  >
-                    <HighlightOffIcon/>
-                  </Button>
+                    <Button
+                      variant="contained"
+                      color="error"
+                      onClick={() => handleStatusChange(item._id, 'disapproved')}
+                    >
+                      <HighlightOffIcon />
+                    </Button>
                   </Tooltip>
                   <Tooltip title="Suspend item">
-                  <Button
-
-                    variant="contained"
-                    color="warning"
-                    onClick={() => handleStatusChange(item._id, 'suspended')}
-                  >
-                   <BlockIcon/>
-                  </Button>
+                    <Button
+                      variant="contained"
+                      color="warning"
+                      onClick={() => handleStatusChange(item._id, 'suspended')}
+                    >
+                      <BlockIcon />
+                    </Button>
                   </Tooltip>
                 </ButtonGroup>
               </CardContent>
