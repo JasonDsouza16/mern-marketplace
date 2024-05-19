@@ -164,6 +164,7 @@ exports.getAllOrders = async (req, res) => {
 exports.getOrdersByUserEmail = async (req, res) => {
   try {
     const userEmail = req.params.userEmail;
+    console.log('Inside ordeers', userEmail)
 
     // Find the user by email
     const user = await User.findOne({ email: userEmail });
