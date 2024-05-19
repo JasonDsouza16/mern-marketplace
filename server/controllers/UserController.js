@@ -14,7 +14,7 @@ exports.createUser = async (req, res) => {
 
 //being used
 exports.createOrUpdateUser = async (req, res) => {
-  const { name, email } = req.body;
+  const { name, email, role } = req.body;
 
   try {
     let user = await User.findOne({ email });
@@ -24,7 +24,7 @@ exports.createOrUpdateUser = async (req, res) => {
       user.name = name;
     } else {
       // Create new user
-      user = new User({ name, email });
+      user = new User({ name, email, role });
     }
 
     await user.save();
