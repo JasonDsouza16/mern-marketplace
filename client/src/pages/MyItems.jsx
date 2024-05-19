@@ -53,7 +53,7 @@ export const MyItems = () => {
     try {
       const token = await getAccessTokenSilently();
       const response = await axios.get(
-        `http://localhost:4000/api/items/userEmail/${user.email}`,
+        `${process.env.REACT_APP_API_BASE_URL}/items/userEmail/${user.email}`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -75,7 +75,7 @@ export const MyItems = () => {
     try {
       const token = await getAccessTokenSilently();
       const response = await axios.post(
-        "http://localhost:4000/api/items",
+        `${process.env.REACT_APP_API_BASE_URL}/items`,
         {
           ...newProduct,
           sellerEmail: user.email,

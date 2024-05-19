@@ -7,7 +7,7 @@ export const CheckoutButton = ({ userEmail }) => {
   const handleCheckout = async () => {
     try {
       const response = await axios.post(
-        "http://localhost:4000/api/orders/create-payment-intent",
+        `${process.env.REACT_APP_API_BASE_URL}/orders/create-payment-intent`,
         { userEmail }
       );
       const { id } = response.data;

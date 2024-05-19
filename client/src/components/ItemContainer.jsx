@@ -26,7 +26,7 @@ export const ItemContainer = () => {
   useEffect(() => {
     const fetchItems = async () => {
       try {
-        const response = await axios.get('http://localhost:4000/api/items/approvedItems');
+        const response = await axios.get(`${process.env.REACT_APP_API_BASE_URL}/items/approvedItems`);
         setItems(response.data);
         setFilteredItems(response.data);
       } catch (error) {
@@ -41,7 +41,7 @@ export const ItemContainer = () => {
     try {
       const token = await getAccessTokenSilently();
       const response = await axios.post(
-        'http://localhost:4000/api/orders',
+        `${process.env.REACT_APP_API_BASE_URL}/orders`,
         { productId, userEmail, quantity: 1 },
         {
           headers: {

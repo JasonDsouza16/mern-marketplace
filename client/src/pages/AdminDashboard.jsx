@@ -29,7 +29,7 @@ export const AdminDashboard = () => {
   const fetchUserRole = async (userEmail) => {
     try {
       const response = await axios.get(
-        `http://localhost:4000/api/users/fetchRole/${userEmail}`
+        `${process.env.REACT_APP_API_BASE_URL}/users/fetchRole/${userEmail}`
       );
       return response.data.role;
     } catch (error) {
@@ -40,7 +40,7 @@ export const AdminDashboard = () => {
 
   const fetchItems = async () => {
     try {
-      const response = await axios.get("http://localhost:4000/api/items");
+      const response = await axios.get(`${process.env.REACT_APP_API_BASE_URL}/items`);
       const itemsWithStatus = response.data.map((item) => ({
         ...item,
         status: item.status || "pending",
@@ -84,7 +84,7 @@ export const AdminDashboard = () => {
 
   const handleStatusChange = async (itemId, newStatus) => {
     try {
-      await axios.patch(`http://localhost:4000/api/items/${itemId}`, {
+      await axios.patch(`${process.env.REACT_APP_API_BASE_URL}/items/${itemId}`, {
         status: newStatus,
       });
       fetchItems();

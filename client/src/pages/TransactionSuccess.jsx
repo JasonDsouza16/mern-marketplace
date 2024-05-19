@@ -14,7 +14,7 @@ export const TransactionSuccess = () => {
 
       try {
         await axios.post(
-          "http://localhost:4000/api/orders/update-success-order-status",
+          `${process.env.REACT_APP_API_BASE_URL}/orders/update-success-order-status`,
           { sessionId }
         );
       } catch (error) {

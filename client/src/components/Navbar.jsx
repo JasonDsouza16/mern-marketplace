@@ -30,7 +30,7 @@ export const Navbar = () => {
     if (isAuthenticated && user) {
       const fetchUserRole = async (userEmail) => {
         try {
-          const response = await axios.get(`http://localhost:4000/api/users/fetchRole/${userEmail}`);
+          const response = await axios.get(`${process.env.REACT_APP_API_BASE_URL}/users/fetchRole/${userEmail}`);
           setRole(response.data.role);
         } catch (error) {
           console.error('Error fetching user role:', error);

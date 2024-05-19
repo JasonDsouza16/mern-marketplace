@@ -23,7 +23,7 @@ export const Cart = () => {
   const fetchOrder = async () => {
     try {
       const response = await axios.get(
-        `http://localhost:4000/api/users/userCart/${user.email}`
+        `${process.env.REACT_APP_API_BASE_URL}/users/userCart/${user.email}`
       );
       setOrder(response.data);
     } catch (error) {
@@ -41,7 +41,7 @@ export const Cart = () => {
     try {
       const token = await getAccessTokenSilently();
       const response = await axios.post(
-        "http://localhost:4000/api/orders",
+        `${process.env.REACT_APP_API_BASE_URL}/orders`,
         {
           productId: productId,
           userEmail: userEmail,
@@ -64,7 +64,7 @@ export const Cart = () => {
     try {
       const token = await getAccessTokenSilently();
       const response = await axios.post(
-        "http://localhost:4000/api/orders",
+        `${process.env.REACT_APP_API_BASE_URL}/orders`,
         {
           productId: productId,
           userEmail: userEmail,

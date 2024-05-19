@@ -30,7 +30,7 @@ export const MyOrders = () => {
         const token = await getAccessTokenSilently();
 
         const response = await axios.get(
-          `http://localhost:4000/api/orders/my-orders/${user.email}`,
+          `${process.env.REACT_APP_API_BASE_URL}/orders/my-orders/${user.email}`,
           {
             headers: {
               Authorization: `Bearer ${token}`,

@@ -17,7 +17,7 @@ export const HomePage = () => {
 
           // Make an API call to check if the user is an admin
           const adminCheckResponse = await axios.get(
-            "http://localhost:4000/api/admin/isAdminCheck",
+            `${process.env.REACT_APP_API_BASE_URL}/admin/isAdminCheck`,
             {
               headers: {
                 Authorization: `Bearer ${token}`,
@@ -36,7 +36,7 @@ export const HomePage = () => {
 
           // Create or update user in your database
           const response = await axios.post(
-            "http://localhost:4000/api/users/create-or-update",
+            `${process.env.REACT_APP_API_BASE_URL}/users/create-or-update`,
             userData,
             {
               headers: {
