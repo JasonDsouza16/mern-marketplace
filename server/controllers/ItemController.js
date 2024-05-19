@@ -1,7 +1,6 @@
 const Item = require('../models/Item');
 const User = require('../models/User');
 
-//required
 exports.createItem = async (req, res) => {
   const { name, description, category, price, image, sellerEmail } = req.body;
   try {
@@ -26,7 +25,6 @@ exports.createItem = async (req, res) => {
   }
 };
 
-//required. populate necessary?
 exports.getAllItems = async (req, res) => {
   try {
     const items = await Item.find()
@@ -45,24 +43,6 @@ exports.getApprovedItems = async (req, res) => {
   }
 };
 
-//required
-exports.suspendItem = async (req, res) => {
-  try {
-    const { id } = req.params;
-    const item = await Item.findByIdAndUpdate(id, { status: 'suspended' }, { new: true });
-
-    if (!item) {
-      return res.status(404).json({ message: 'Item not found' });
-    }
-
-    res.status(200).json(item);
-  } catch (error) {
-    console.error('Error suspending item:', error);
-    res.status(500).json({ message: 'Internal server error' });
-  }
-};
-
-//required
 exports.getAllItemsByUserEmail = async (req, res) => {
   try {
     const email = req.params.userEmail;
@@ -78,20 +58,6 @@ exports.getAllItemsByUserEmail = async (req, res) => {
   }
 };
 
-exports.getItemById = async (req, res) => {
-  try {
-    const item = await Item.findById(req.params.id).populate('seller');
-    if (!item) {
-      return res.status(404).json({ message: 'Item not found' });
-    }
-    res.json(item);
-  } catch (error) {
-    res.status(500).json({ message: error.message });
-  }
-};
-
-
-//required
 exports.updateItem = async (req, res) => {
   try {
     const { status } = req.body;
@@ -109,15 +75,3 @@ exports.updateItem = async (req, res) => {
     res.status(500).json({ message: err.message });
   }
 }
-
-exports.deleteItem = async (req, res) => {
-  try {
-    const deletedItem = await Item.findByIdAndDelete(req.params.id);
-    if (!deletedItem) {
-      return res.status(404).json({ message: 'Item not found' });
-    }
-    res.json({ message: 'Item deleted successfully' });
-  } catch (error) {
-    res.status(500).json({ message: error.message });
-  }
-};

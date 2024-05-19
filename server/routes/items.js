@@ -6,10 +6,7 @@ const ItemController = require('../controllers/itemController');
 router.post('/', ItemController.createItem);
 router.get('/', ItemController.getAllItems);
 router.get('/approvedItems', ItemController.getApprovedItems);
-router.put('/:id/suspend', ItemController.suspendItem);
 router.get('/userEmail/:userEmail', ItemController.getAllItemsByUserEmail);
-router.get('/:id', ItemController.getItemById);
-router.patch('/:id', ItemController.updateItem);
-router.delete('/:id', ItemController.deleteItem);
+router.patch('/:id', ItemController.updateItem)
 
 module.exports = router;

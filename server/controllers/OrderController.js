@@ -3,17 +3,6 @@ const User = require("../models/User");
 const OrderItem = require("../models/orderItem");
 const stripe = require("stripe")(process.env.STRIPE_SECRET_KEY);
 
-exports.createOrder = async (req, res) => {
-  try {
-    const newOrder = new Order(req.body);
-    await newOrder.save();
-    res.status(201).json(newOrder);
-  } catch (error) {
-    res.status(400).json({ message: error.message });
-  }
-};
-
-//required
 exports.createOrUpdateOrder = async (req, res) => {
   try {
     // Extract product ID and user email from request body
@@ -135,35 +124,6 @@ exports.createPaymentIntent = async (req, res) => {
   }
 };
 
-// exports.handleWebhook = (req, res) => {
-//   const sig = req.headers['stripe-signature'];
-//   let event;
-
-//   try {
-//     event = stripe.webhooks.constructEvent(req.body, sig, process.env.STRIPE_WEBHOOK_SECRET);
-//   } catch (err) {
-//     return res.status(400).send(`Webhook Error: ${err.message}`);
-//   }
-
-//   if (event.type === 'payment_intent.succeeded') {
-//     const paymentIntent = event.data.object;
-
-//     // Handle successful payment here (update order status, etc.)
-//     console.log('PaymentIntent was successful!');
-//   }
-
-//   res.json({ received: true });
-// };
-
-exports.getAllOrders = async (req, res) => {
-  try {
-    const orders = await Order.find().populate("user items.item");
-    res.json(orders);
-  } catch (error) {
-    res.status(500).json({ message: error.message });
-  }
-};
-
 exports.getOrdersByUserEmail = async (req, res) => {
   try {
     const userEmail = req.params.userEmail;
@@ -186,49 +146,6 @@ exports.getOrdersByUserEmail = async (req, res) => {
   }
 };
 
-exports.getOrderById = async (req, res) => {
-  try {
-    const order = await Order.findById(req.params.id).populate(
-      "user items.item"
-    );
-    if (!order) {
-      return res.status(404).json({ message: "Order not found" });
-    }
-    res.json(order);
-  } catch (error) {
-    res.status(500).json({ message: error.message });
-  }
-};
-
-exports.updateOrder = async (req, res) => {
-  try {
-    const updatedOrder = await Order.findByIdAndUpdate(
-      req.params.id,
-      req.body,
-      { new: true }
-    );
-    if (!updatedOrder) {
-      return res.status(404).json({ message: "Order not found" });
-    }
-    res.json(updatedOrder);
-  } catch (error) {
-    res.status(400).json({ message: error.message });
-  }
-};
-
-exports.deleteOrder = async (req, res) => {
-  try {
-    const deletedOrder = await Order.findByIdAndDelete(req.params.id);
-    if (!deletedOrder) {
-      return res.status(404).json({ message: "Order not found" });
-    }
-    res.json({ message: "Order deleted successfully" });
-  } catch (error) {
-    res.status(500).json({ message: error.message });
-  }
-};
-
-//required
 exports.updateSuccessOrderStatus = async (req, res) => {
   const { sessionId } = req.body;
 
