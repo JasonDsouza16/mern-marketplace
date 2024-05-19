@@ -6,30 +6,44 @@ import { ItemContainer } from "../components/ItemContainer";
 import Loader from "../components/Loader";
 
 export const HomePage = () => {
-  const { isAuthenticated, user, isLoading } = useAuth0();
+  const { isAuthenticated, user, isLoading, getAccessTokenSilently } = useAuth0();
   const navigate = useNavigate();
 
   useEffect(() => {
     const createOrUpdateUser = async () => {
       if (isAuthenticated) {
         try {
-          let userData = {
+          // Get access token
+          const token = await getAccessTokenSilently();
+
+          // Make an API call to check if the user is an admin
+          const adminCheckResponse = await axios.get(
+            "http://localhost:4000/api/admin/isAdminCheck",
+            {
+              headers: {
+                Authorization: `Bearer ${token}`,
+              },
+              params: {
+                email: user.email,
+              },
+            }
+          );
+
+          const userData = {
             name: user.name,
             email: user.email,
-            role: "user",
+            role: adminCheckResponse.data.isAdmin ? "admin" : "user",
           };
 
-          // Check if the user's email is xyz-sa@gmail.com
-          if (user.email === "mern.marketplace.sa@gmail.com") {
-            userData = {
-              ...userData,
-              role: "admin", // Set the role to admin
-            };
-          }
-
+          // Create or update user in your database
           const response = await axios.post(
             "http://localhost:4000/api/users/create-or-update",
-            userData
+            userData,
+            {
+              headers: {
+                Authorization: `Bearer ${token}`,
+              },
+            }
           );
 
           // Navigate to admin dashboard if user is admin
@@ -43,7 +57,7 @@ export const HomePage = () => {
     };
 
     createOrUpdateUser();
-  }, [isAuthenticated, user]);
+  }, [isAuthenticated, user, getAccessTokenSilently, navigate]);
 
   return (
     <div className="container">

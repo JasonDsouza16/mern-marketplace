@@ -6,10 +6,10 @@ import { Card, CardContent, CardMedia, Grid, Typography, Container, Button, Slid
 
 export const ItemContainer = () => {
   const [items, setItems] = useState([]);
-  const [priceRange, setPriceRange] = useState([0, 100000]); // Default price range
+  const [priceRange, setPriceRange] = useState([0, 100000]); 
   const [categoryFilter, setCategoryFilter] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
-  const [filteredItems, setFilteredItems] = useState([]); // State for filtered items
+  const [filteredItems, setFilteredItems] = useState([]);
   const { isAuthenticated, getAccessTokenSilently, user } = useAuth0();
 
   useEffect(() => {
@@ -17,7 +17,6 @@ export const ItemContainer = () => {
       try {
         const response = await axios.get('http://localhost:4000/api/items/approvedItems');
         setItems(response.data);
-        // Initially display all items
         setFilteredItems(response.data);
       } catch (error) {
         console.error('Error fetching items:', error);
@@ -48,7 +47,7 @@ export const ItemContainer = () => {
     }
   };
 
-  // Filter items based on price range, category, and search query
+
   const applyFilters = () => {
     const filtered = items.filter(item => {
       const priceInRange = item.price >= priceRange[0] && item.price <= priceRange[1];
@@ -116,7 +115,6 @@ export const ItemContainer = () => {
         </Grid>
       </Grid>
       
-      {/* Apply Filters and Reset Filters buttons */}
       <Grid container spacing={2} justifyContent="flex-end" style={{ marginTop: '16px' }}>
         <Grid item>
           <Button
