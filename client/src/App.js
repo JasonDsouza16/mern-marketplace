@@ -24,7 +24,7 @@ const App = () => {
           <Route exact path="/logout" element={<Logout />} />
           <Route exact path="/profile" element={<Profile />} />
           <Route exact path="/my-cart" element={<Cart />} />
-          <Route exact path="/transaction-success" element={<TransactionSuccess />}/>
+          <Route exact path="/transaction-success" element={<TransactionSuccess />} />
           <Route exact path="/transaction-fail" element={<TransactionFail />} />
           <Route exact path="/my-orders" element={<MyOrders />} />
           <Route exact path="/admin" element={<AdminDashboard />} />

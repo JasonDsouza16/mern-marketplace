@@ -1,12 +1,23 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
-import { useAuth0 } from "@auth0/auth0-react";
+import { useAuth0 } from '@auth0/auth0-react';
 import RestartAltIcon from '@mui/icons-material/RestartAlt';
-import { Card, CardContent, CardMedia, Grid, Typography, Container, Button, Slider, TextField, MenuItem } from '@mui/material';
+import {
+  Card,
+  CardContent,
+  CardMedia,
+  Grid,
+  Typography,
+  Container,
+  Button,
+  Slider,
+  TextField,
+  MenuItem,
+} from '@mui/material';
 
 export const ItemContainer = () => {
   const [items, setItems] = useState([]);
-  const [priceRange, setPriceRange] = useState([0, 100000]); 
+  const [priceRange, setPriceRange] = useState([0, 100000]);
   const [categoryFilter, setCategoryFilter] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
   const [filteredItems, setFilteredItems] = useState([]);
@@ -31,10 +42,7 @@ export const ItemContainer = () => {
       const token = await getAccessTokenSilently();
       const response = await axios.post(
         'http://localhost:4000/api/orders',
-        { productId: productId,
-          userEmail: userEmail,
-          quantity: 1
-        },
+        { productId, userEmail, quantity: 1 },
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -47,9 +55,8 @@ export const ItemContainer = () => {
     }
   };
 
-
   const applyFilters = () => {
-    const filtered = items.filter(item => {
+    const filtered = items.filter((item) => {
       const priceInRange = item.price >= priceRange[0] && item.price <= priceRange[1];
       const categoryMatch = categoryFilter === '' || item.category === categoryFilter;
       const queryMatch = searchQuery === '' || item.name.toLowerCase().includes(searchQuery.toLowerCase());
@@ -74,7 +81,6 @@ export const ItemContainer = () => {
       <Typography variant="h4" component="h1" gutterBottom>
         All products
       </Typography>
-      {/* Filters */}
       <Grid container spacing={2} alignItems="center">
         <Grid item xs={12} sm={4}>
           <Typography variant="h6">Price Range:</Typography>
@@ -114,14 +120,10 @@ export const ItemContainer = () => {
           />
         </Grid>
       </Grid>
-      
+
       <Grid container spacing={2} justifyContent="flex-end" style={{ marginTop: '16px' }}>
         <Grid item>
-          <Button
-            variant="contained"
-            color="primary"
-            onClick={handleApplyFilters}
-          >
+          <Button variant="contained" color="primary" onClick={handleApplyFilters}>
             Apply Filters
           </Button>
         </Grid>
@@ -136,8 +138,7 @@ export const ItemContainer = () => {
           </Button>
         </Grid>
       </Grid>
-<br/>
-      {/* Item Cards */}
+      <br />
       <Grid container spacing={4}>
         {filteredItems.map((item) => (
           <Grid item key={item._id} xs={12} sm={6} md={4}>
@@ -145,7 +146,7 @@ export const ItemContainer = () => {
               <CardMedia
                 component="img"
                 height="140"
-                image={item.image || 'default-image.jpg'} // Provide a default image if none
+                image={item.image}
                 alt={item.name}
               />
               <CardContent>
@@ -160,9 +161,13 @@ export const ItemContainer = () => {
                 </Typography>
                 <Typography variant="body2" color="text.primary">
                   Price: Rs.{item.price}
-                </Typography>
+                  </Typography>
                 {isAuthenticated && (
-                  <Button variant="contained" color="primary" onClick={()=>handleAddToCart(item._id, user.email)}>
+                  <Button
+                    variant="contained"
+                    color="primary"
+                    onClick={() => handleAddToCart(item._id, user.email)}
+                  >
                     Add to Cart
                   </Button>
                 )}

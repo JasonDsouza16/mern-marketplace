@@ -1,43 +1,54 @@
-import React, { useState, useEffect } from 'react';
-import axios from 'axios';
-import { useAuth0 } from '@auth0/auth0-react';
-import { useNavigate } from 'react-router-dom';
-import { Tab, Tabs, Typography, Container, Grid, Card, CardContent, Button, CardMedia, ButtonGroup, Tooltip } from '@mui/material';
-import HourglassTopIcon from '@mui/icons-material/HourglassTop';
-import AddTaskIcon from '@mui/icons-material/AddTask';
-import HighlightOffIcon from '@mui/icons-material/HighlightOff';
-import BlockIcon from '@mui/icons-material/Block';
-import Loader from '../components/Loader';
+import React, { useState, useEffect } from "react";
+import axios from "axios";
+import { useAuth0 } from "@auth0/auth0-react";
+import {
+  Tab,
+  Tabs,
+  Typography,
+  Container,
+  Grid,
+  Card,
+  CardContent,
+  Button,
+  CardMedia,
+  ButtonGroup,
+  Tooltip,
+} from "@mui/material";
+import AddTaskIcon from "@mui/icons-material/AddTask";
+import HighlightOffIcon from "@mui/icons-material/HighlightOff";
+import BlockIcon from "@mui/icons-material/Block";
+import Loader from "../components/Loader";
 
 export const AdminDashboard = () => {
   const { isAuthenticated, user, isLoading } = useAuth0();
   const [items, setItems] = useState([]);
   const [filteredItems, setFilteredItems] = useState([]);
-  const [statusFilter, setStatusFilter] = useState('ALL');
+  const [statusFilter, setStatusFilter] = useState("ALL");
   const [isAdmin, setIsAdmin] = useState(false);
-  const navigate = useNavigate();
 
   const fetchUserRole = async (userEmail) => {
     try {
-      const response = await axios.get(`http://localhost:4000/api/users/fetchRole/${userEmail}`);
+      const response = await axios.get(
+        `http://localhost:4000/api/users/fetchRole/${userEmail}`
+      );
       return response.data.role;
     } catch (error) {
-      console.error('Error fetching user role:', error);
+      console.error("Error fetching user role:", error);
       return null;
     }
   };
 
   const fetchItems = async () => {
     try {
-      const response = await axios.get('http://localhost:4000/api/items');
-      const itemsWithStatus = response.data.map(item => ({
+      const response = await axios.get("http://localhost:4000/api/items");
+      const itemsWithStatus = response.data.map((item) => ({
         ...item,
-        status: item.status || 'pending', // Default to 'pending' if no status
+        status: item.status || "pending",
       }));
       setItems(itemsWithStatus);
-      filterItems(itemsWithStatus, statusFilter); // Filter items based on the current status filter
+      filterItems(itemsWithStatus, statusFilter);
     } catch (error) {
-      console.error('Error fetching items:', error);
+      console.error("Error fetching items:", error);
     }
   };
 
@@ -45,7 +56,7 @@ export const AdminDashboard = () => {
     if (isAuthenticated && user) {
       const checkAdminStatus = async () => {
         const role = await fetchUserRole(user.email);
-        if (role === 'admin') {
+        if (role === "admin") {
           setIsAdmin(true);
           fetchItems();
         } else {
@@ -57,10 +68,12 @@ export const AdminDashboard = () => {
   }, [isAuthenticated, user]);
 
   const filterItems = (items, status) => {
-    if (status === 'ALL') {
+    if (status === "ALL") {
       setFilteredItems(items);
     } else {
-      const filtered = items.filter(item => item.status === status.toLowerCase());
+      const filtered = items.filter(
+        (item) => item.status === status.toLowerCase()
+      );
       setFilteredItems(filtered);
     }
   };
@@ -71,19 +84,29 @@ export const AdminDashboard = () => {
 
   const handleStatusChange = async (itemId, newStatus) => {
     try {
-      await axios.patch(`http://localhost:4000/api/items/${itemId}`, { status: newStatus });
+      await axios.patch(`http://localhost:4000/api/items/${itemId}`, {
+        status: newStatus,
+      });
       fetchItems();
     } catch (error) {
-      console.error('Error updating item status:', error);
+      console.error("Error updating item status:", error);
     }
   };
 
   if (isLoading) {
-    return <Typography><Loader/></Typography>;
+    return (
+      <Typography>
+        <Loader />
+      </Typography>
+    );
   }
 
   if (!isAuthenticated || !isAdmin) {
-    return <Typography>Please log in as an administrator to access this page.</Typography>;
+    return (
+      <Typography>
+        Please log in as an administrator to access this page.
+      </Typography>
+    );
   }
 
   return (
@@ -106,7 +129,7 @@ export const AdminDashboard = () => {
       </Tabs>
       <br />
       <Grid container spacing={3}>
-        {filteredItems.map(item => (
+        {filteredItems.map((item) => (
           <Grid item key={item._id} xs={12} sm={6} md={4}>
             <Card>
               <CardMedia
@@ -136,8 +159,8 @@ export const AdminDashboard = () => {
                     <Button
                       variant="contained"
                       color="success"
-                      onClick={() => handleStatusChange(item._id, 'approved')}
-                      style={{ marginRight: '5px' }}
+                      onClick={() => handleStatusChange(item._id, "approved")}
+                      style={{ marginRight: "5px" }}
                     >
                       <AddTaskIcon />
                     </Button>
@@ -146,7 +169,9 @@ export const AdminDashboard = () => {
                     <Button
                       variant="contained"
                       color="error"
-                      onClick={() => handleStatusChange(item._id, 'disapproved')}
+                      onClick={() =>
+                        handleStatusChange(item._id, "disapproved")
+                      }
                     >
                       <HighlightOffIcon />
                     </Button>
@@ -155,7 +180,7 @@ export const AdminDashboard = () => {
                     <Button
                       variant="contained"
                       color="warning"
-                      onClick={() => handleStatusChange(item._id, 'suspended')}
+                      onClick={() => handleStatusChange(item._id, "suspended")}
                     >
                       <BlockIcon />
                     </Button>

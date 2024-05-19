@@ -8,10 +8,8 @@ exports.createOrUpdateUser = async (req, res) => {
     let user = await User.findOne({ email });
 
     if (user) {
-      // Update existing user
       user.name = name;
     } else {
-      // Create new user
       user = new User({ name, email, role });
     }
 
@@ -28,16 +26,11 @@ exports.getUserCart = async (req, res) => {
 
     let user = await User.findOne({ email: userEmail });
 
-    if (user) {
-      // Update existing user
-      userId = user._id;
-    } else {
-      // Create new user
+    if (!user) {
       return res.status(404).json({ message: 'No user found' });
     }
 
-    // Find the user's cart order with status "in cart"
-    const cartOrder = await Order.findOne({ user: userId, status: 'in cart' }).populate('items.item', 'name price');
+    const cartOrder = await Order.findOne({ user: user._id, status: 'in cart' }).populate('items.item', 'name price');
     if (!cartOrder) {
       return res.status(404).json({ message: 'Cart is empty' });
     }

@@ -14,13 +14,11 @@ import AddIcon from "@mui/icons-material/Add";
 import RemoveIcon from "@mui/icons-material/Remove";
 import { useAuth0 } from "@auth0/auth0-react";
 import Loader from "../components/Loader";
-import { useNavigate } from "react-router-dom";
 import { CheckoutButton } from "./CheckoutButton";
 
 export const Cart = () => {
   const [order, setOrder] = useState(null);
   const { user, isLoading, getAccessTokenSilently } = useAuth0();
-  const navigate = useNavigate();
 
   const fetchOrder = async () => {
     try {
@@ -43,11 +41,11 @@ export const Cart = () => {
     try {
       const token = await getAccessTokenSilently();
       const response = await axios.post(
-        'http://localhost:4000/api/orders',
+        "http://localhost:4000/api/orders",
         {
           productId: productId,
           userEmail: userEmail,
-          quantity: 1
+          quantity: 1,
         },
         {
           headers: {
@@ -56,9 +54,9 @@ export const Cart = () => {
         }
       );
       fetchOrder();
-      console.log('Item added to cart:', response.data);
+      console.log("Item added to cart:", response.data);
     } catch (error) {
-      console.error('Error adding item to cart:', error);
+      console.error("Error adding item to cart:", error);
     }
   };
 
@@ -66,11 +64,11 @@ export const Cart = () => {
     try {
       const token = await getAccessTokenSilently();
       const response = await axios.post(
-        'http://localhost:4000/api/orders',
+        "http://localhost:4000/api/orders",
         {
           productId: productId,
           userEmail: userEmail,
-          quantity: -1
+          quantity: -1,
         },
         {
           headers: {
@@ -79,9 +77,9 @@ export const Cart = () => {
         }
       );
       fetchOrder();
-      console.log('Item removed from cart:', response.data);
+      console.log("Item removed from cart:", response.data);
     } catch (error) {
-      console.error('Error removing item from cart:', error);
+      console.error("Error removing item from cart:", error);
     }
   };
 
@@ -107,14 +105,18 @@ export const Cart = () => {
                       <IconButton
                         edge="end"
                         aria-label="remove"
-                        onClick={() => handleDecrement(item.item._id, user.email)}
+                        onClick={() =>
+                          handleDecrement(item.item._id, user.email)
+                        }
                       >
                         <RemoveIcon />
                       </IconButton>
                       <IconButton
                         edge="end"
                         aria-label="add"
-                        onClick={() => handleIncrement(item.item._id, user.email)}
+                        onClick={() =>
+                          handleIncrement(item.item._id, user.email)
+                        }
                       >
                         <AddIcon />
                       </IconButton>

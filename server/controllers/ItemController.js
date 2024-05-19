@@ -27,7 +27,7 @@ exports.createItem = async (req, res) => {
 
 exports.getAllItems = async (req, res) => {
   try {
-    const items = await Item.find()
+    const items = await Item.find();
     res.json(items);
   } catch (error) {
     res.status(500).json({ message: error.message });
@@ -36,7 +36,7 @@ exports.getAllItems = async (req, res) => {
 
 exports.getApprovedItems = async (req, res) => {
   try {
-    const items = await Item.find({status: "approved"})
+    const items = await Item.find({ status: "approved" });
     res.json(items);
   } catch (error) {
     res.status(500).json({ message: error.message });
@@ -53,7 +53,7 @@ exports.getAllItemsByUserEmail = async (req, res) => {
     const items = await Item.find({ seller: user._id });
     res.status(200).json(items);
   } catch (err) {
-    console.log(error)
+    console.log(err);
     res.status(500).json({ message: err.message });
   }
 };
@@ -74,4 +74,4 @@ exports.updateItem = async (req, res) => {
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
-}
+};

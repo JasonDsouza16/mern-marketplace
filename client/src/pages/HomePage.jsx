@@ -13,7 +13,6 @@ export const HomePage = () => {
     const createOrUpdateUser = async () => {
       if (isAuthenticated) {
         try {
-          // Get access token
           const token = await getAccessTokenSilently();
 
           // Make an API call to check if the user is an admin

@@ -1,79 +1,63 @@
 const Order = require("../models/Order");
 const User = require("../models/User");
-const OrderItem = require("../models/orderItem");
 const stripe = require("stripe")(process.env.STRIPE_SECRET_KEY);
 
 exports.createOrUpdateOrder = async (req, res) => {
   try {
-    // Extract product ID and user email from request body
     const { productId, userEmail, quantity } = req.body;
 
-    // Find the user by email
     let user = await User.findOne({ email: userEmail });
 
-    // If user not found, return 404
     if (!user) {
       return res.status(404).json({ message: "User not found" });
     }
 
-    // Find the user's cart order with status "in cart"
     let cartOrder = await Order.findOne({
       user: user._id,
       status: "in cart",
     }).populate("items.item");
 
-    // If no cart order exists, create a new one
     if (!cartOrder) {
       cartOrder = new Order({
         user: user._id,
         status: "in cart",
-        items: [], // Initialize empty items array
+        items: [],
       });
     }
 
-    // Find if the item already exists in the cart order's items
     const existingOrderItemIndex = cartOrder.items.findIndex(
       (orderItem) => orderItem.item._id.toString() === productId
     );
 
-    // If the item already exists, increment its quantity by 1
     if (existingOrderItemIndex !== -1) {
       cartOrder.items[existingOrderItemIndex].quantity += quantity;
       if (cartOrder.items[existingOrderItemIndex].quantity <= 0) {
         cartOrder.items.splice(existingOrderItemIndex, 1);
       }
     } else {
-      // If the item doesn't exist, create a new order item with quantity 1
       const orderItem = {
         item: productId,
         quantity: 1,
       };
 
-      // Push the order item to the cart order's items array
       cartOrder.items.push(orderItem);
     }
 
-    // Calculate the grand total for the order
-    await cartOrder.populate("items.item"); // Ensure items are populated with their details
+    await cartOrder.populate("items.item");
     cartOrder.orderGrandTotal = calculateOrderGrandTotal(cartOrder.items);
 
-    // Save the cart order to the database
     await cartOrder.save();
 
-    // Return success response
     res.status(200).json({ message: "Order updated successfully" });
   } catch (error) {
-    // Handle errors
     console.error("Error creating or updating order:", error);
     res.status(500).json({ message: "Internal server error" });
   }
 };
 
-// Function to calculate the grand total for the order
 const calculateOrderGrandTotal = (items) => {
   let total = 0;
   for (const item of items) {
-    // Check if the item and its price are defined
     if (item.item && item.item.price) {
       total += item.quantity * item.item.price;
     }
@@ -83,7 +67,7 @@ const calculateOrderGrandTotal = (items) => {
 
 exports.createPaymentIntent = async (req, res) => {
   const { userEmail } = req.body;
-  console.log("email ", userEmail);
+
   try {
     const user = await User.findOne({ email: userEmail });
     const userOrder = await Order.findOne({
@@ -127,16 +111,12 @@ exports.createPaymentIntent = async (req, res) => {
 exports.getOrdersByUserEmail = async (req, res) => {
   try {
     const userEmail = req.params.userEmail;
-
-    // Find the user by email
     const user = await User.findOne({ email: userEmail });
 
-    // If user not found, return 404
     if (!user) {
       return res.status(404).json({ message: "User not found" });
     }
 
-    // Find all orders for the user
     const orders = await Order.find({ user: user._id }).populate("items.item");
 
     res.status(200).json(orders);
@@ -158,7 +138,6 @@ exports.updateSuccessOrderStatus = async (req, res) => {
 
     const orderId = session.metadata.orderId;
 
-    // Update the order date and status to "ordered"
     await Order.findByIdAndUpdate(orderId, {
       status: "ordered",
       date: Date.now,
