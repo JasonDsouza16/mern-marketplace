@@ -63,8 +63,8 @@ Clone the project
   ```bash
     REACT_APP_API_BASE_URL = "http://localhost:4000/api"
     REACT_APP_STRIPE_PUBLIC_KEY = "{YOUR STRIPE PUBLIC KEY}"
-    REACT_APP_AUTH0_DOMAIN = "{YOUR AUTH0 DOMAIN}" # Refer Doc for additional step
-    REACT_APP_AUTH0_CLIENT_ID = "{YOUR AUTH0 CLIENT ID}" # Refer Doc for additional step
+    REACT_APP_AUTH0_DOMAIN = "{YOUR AUTH0 DOMAIN}"
+    REACT_APP_AUTH0_CLIENT_ID = "{YOUR AUTH0 CLIENT ID}"
   ```
   
   3. Start the server
